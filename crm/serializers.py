@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import User, Course, Enrollment
+from .models import User, Course, Enrollment, Lesson, Assignment
+
 
 class UserSerializer(serializers.ModelSerializer):
     current_password = serializers.CharField(write_only=True, required=False)
@@ -101,3 +102,45 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class LessonSerializer(serializers.ModelSerializer):
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
+
+    class Meta:
+        model = Lesson
+        fields = ['id', 'course', 'title', 'content']
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        return Lesson.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.course = validated_data.get('course', instance.course)
+        instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+        instance.save()
+        return instance
+
+
+class AssignmentSerializer(serializers.ModelSerializer):
+    lesson = serializers.PrimaryKeyRelatedField(queryset=Lesson.objects.all())
+    due_date = serializers.DateTimeField(
+        input_formats=['%d.%m.%Y %H:%M', '%Y-%m-%dT%H:%M:%SZ'],  # Shu yerda formatlarni ko'rsatamiz
+        format='%d.%m.%Y %H:%M'  # Chiqish formatini ham o'zgartirish mumkin
+    )
+
+    class Meta:
+        model = Assignment
+        fields = ['id', 'lesson', 'title', 'description', 'content', 'due_date']
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        return Assignment.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.lesson = validated_data.get('lesson', instance.lesson)
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.content = validated_data.get('content', instance.content)
+        instance.due_date = validated_data.get('due_date', instance.due_date)
+        instance.save()
+        return instance

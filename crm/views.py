@@ -1,14 +1,16 @@
-from rest_framework import status
+from rest_framework import status, authentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import User, Course, Enrollment
-from .serializers import UserSerializer, CourseSerializer, EnrollmentSerializer
-from .permissions import IsAuth
+from .models import User, Course, Enrollment, Lesson, Assignment
+from .serializers import UserSerializer, CourseSerializer, EnrollmentSerializer, LessonSerializer, AssignmentSerializer
+from .permissions import IsAuth, IsAuthToken
 
 
+# Token authorization ishlatilgan
 class UserListView(APIView):
-    permission_classes = [IsAuth]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthToken]
     def get(self, request):
         users = User.objects.all()
         users_serializer = UserSerializer(users, many=True)
@@ -29,8 +31,10 @@ class UserListView(APIView):
         return Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Token authorization ishlatilgan
 class UserDetailView(APIView):
-    permission_classes = [IsAuth]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthToken]
     def get(self, request, pk):
         try:
             user = User.objects.get(pk=pk)
@@ -64,8 +68,10 @@ class UserDetailView(APIView):
             return Response({'message': 'Foydalanuvchi topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
 
+# Token authorization ishlatilgan
 class CourseListView(APIView):
-    permission_classes = [IsAuth]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthToken]
 
     def get(self, request):
         courses = Course.objects.all()
@@ -86,8 +92,10 @@ class CourseListView(APIView):
                 return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Token authorization ishlatilgan
 class CourseDetailView(APIView):
-    permission_classes = [IsAuth]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthToken]
 
     def get(self, request, pk):
         try:
@@ -125,7 +133,6 @@ class CourseDetailView(APIView):
         except Course.DoesNotExist:
             return Response({'message': 'Kurs topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
-
 class EnrollmentListView(APIView):
     permission_classes = [IsAuth]
 
@@ -144,6 +151,7 @@ class EnrollmentListView(APIView):
             }
             return Response(context, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class EnrollmentDetailView(APIView):
     permission_classes = [IsAuth]
@@ -179,3 +187,114 @@ class EnrollmentDetailView(APIView):
             return Response({'message': "O'chirildi"}, status=status.HTTP_200_OK)
         except Enrollment.DoesNotExist:
             return Response({'message': 'Ro\'yxatdan o\'tish topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class LessonListView(APIView):
+    permission_classes = [IsAuth]
+
+    def get(self, request):
+        lessons = Lesson.objects.all()
+        serializer = LessonSerializer(lessons, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = LessonSerializer(data=request.data)
+        if serializer.is_valid():
+            lesson = serializer.create(serializer.validated_data)
+            context = {
+                'message': "Dars muvaffaqiyatli yaratildi",
+                'lesson': LessonSerializer(lesson).data
+            }
+            return Response(context, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LessonDetailView(APIView):
+    permission_classes = [IsAuth]
+
+    def get(self, request, pk):
+        try:
+            lesson = Lesson.objects.get(pk=pk)
+            serializer = LessonSerializer(lesson)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Lesson.DoesNotExist:
+            return Response({'message': 'Dars topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        try:
+            lesson = Lesson.objects.get(pk=pk)
+        except Lesson.DoesNotExist:
+            return Response({'message': 'Dars topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = LessonSerializer(lesson, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_lesson = serializer.update(lesson, serializer.validated_data)
+            context = {
+                'message': "Dars ma'lumotlari yangilandi",
+                'lesson': LessonSerializer(updated_lesson).data
+            }
+            return Response(context, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            Lesson.objects.get(pk=pk).delete()
+            return Response({'message': "O'chirildi"}, status=status.HTTP_200_OK)
+        except Lesson.DoesNotExist:
+            return Response({'message': 'Dars topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class AssignmentListView(APIView):
+    permission_classes = [IsAuth]
+
+    def get(self, request):
+        assignments = Assignment.objects.all()
+        serializer = AssignmentSerializer(assignments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = AssignmentSerializer(data=request.data)
+        if serializer.is_valid():
+            assignment = serializer.create(serializer.validated_data)
+            context = {
+                'message': "Vazifa muvaffaqiyatli yaratildi",
+                'assignment': AssignmentSerializer(assignment).data
+            }
+            return Response(context, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AssignmentDetailView(APIView):
+    permission_classes = [IsAuth]
+
+    def get(self, request, pk):
+        try:
+            assignment = Assignment.objects.get(pk=pk)
+            serializer = AssignmentSerializer(assignment)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Assignment.DoesNotExist:
+            return Response({'message': 'Vazifa topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        try:
+            assignment = Assignment.objects.get(pk=pk)
+        except Assignment.DoesNotExist:
+            return Response({'message': 'Vazifa topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AssignmentSerializer(assignment, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_assignment = serializer.update(assignment, serializer.validated_data)
+            context = {
+                'message': "Vazifa ma'lumotlari yangilandi",
+                'assignment': AssignmentSerializer(updated_assignment).data
+            }
+            return Response(context, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            Assignment.objects.get(pk=pk).delete()
+            return Response({'message': "O'chirildi"}, status=status.HTTP_200_OK)
+        except Assignment.DoesNotExist:
+            return Response({'message': 'Vazifa topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+

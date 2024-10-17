@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'crm',
 
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
     'django_cleanup',
 ]
 
@@ -111,7 +113,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
-
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',  # Session-Based
+        # 'rest_framework.authentication.TokenAuthentication',    # Token-Based
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
+
 
 AUTH_USER_MODEL = 'crm.User'
