@@ -1,0 +1,44 @@
+User (Foydalanuvchi) Modeli:
+
+    id: Avtomatik raqam
+    username: Foydalanuvchi nomi (unikal)
+    email: Foydalanuvchi elektron pochta manzili (unikal)
+    password: Foydalanuvchi paroli (hashlangan)
+    role: Foydalanuvchi roli (masalan, o'quvchi, o'qituvchi, administrator)
+    created_at: Foydalanuvchi yaratilgan vaqti
+    updated_at: Foydalanuvchi ma'lumotlari yangilangan vaqti
+
+Course (Kurs) Modeli:
+
+    id: Avtomatik raqam
+    title: Kurs nomi
+    description: Kurs tavsifi
+    teacher: Foydalanuvchi (o'qituvchi) modeliga bog'liq bo'lgan foreign key
+    created_at: Kurs yaratilgan vaqti
+    updated_at: Kurs ma'lumotlari yangilangan vaqti
+
+Lesson (Dars) Modeli:
+
+    id: Avtomatik raqam
+    course: Kurs modeliga bog'liq bo'lgan foreign key
+    title: Dars nomi
+    content: Dars mazmuni (matn, video, PDF fayllar va boshqalar)
+    created_at: Dars yaratilgan vaqti
+    updated_at: Dars ma'lumotlari yangilangan vaqti
+
+Enrollment (Ro'yxatdan O'tish) Modeli:
+
+    id: Avtomatik raqam
+    user: Foydalanuvchi modeliga bog'liq bo'lgan foreign key (o'quvchi)
+    course: Kurs modeliga bog'liq bo'lgan foreign key
+    enrollment_date: Ro'yxatdan o'tgan sana
+
+Assignment (Vazifa) Modeli:
+
+    id: Avtomatik raqam
+    lesson: Dars modeliga bog'liq bo'lgan foreign key
+    title: Vazifa nomi
+    description: Vazifa tavsifi
+    due_date: Vazifa topshirish muddati
+    created_at: Vazifa yaratilgan vaqti
+    updated_at: Vazifa ma'lumotlari yangilangan vaqti
